@@ -64,6 +64,26 @@ def selfcheck() -> int:
     return 0 if ok else 1
 
 
+def infra_failure_reason(stalled: bool, timed_out: bool, metrics: dict | None) -> str | None:
+    """Failures caused by the harness/provider rather than the agent's work. These are rerun, not scored."""
+    if stalled:
+        return "stalled"
+    if not metrics or metrics.get("assistant_messages", 0) == 0:
+        return "no_model_turn"
+    stops = metrics.get("stop_reasons") or {}
+    if metrics.get("tool_calls", 0) == 0 and set(stops) <= {"error", "aborted"}:
+        return f"provider_error: {metrics.get('error_message')}"
+    if timed_out and "stop" not in stops and metrics.get("assistant_messages", 0) <= 5:
+        return "hung_before_timeout"
+    return None
+
+
+def is_infra_failure(record: dict) -> bool:
+    if record.get("infra_failure"):
+        return True
+    return infra_failure_reason(record.get("stalled", False), record.get("timed_out", False), record.get("metrics")) is not None
+
+
 def run_one(exp: Experiment, adapter, task_id: str, condition: Condition, rep: int, sanitize) -> dict:
     task = load_task(task_id)
     run_id = f"{task.id}__{condition.name}__r{rep:02d}"
@@ -99,6 +119,8 @@ def run_one(exp: Experiment, adapter, task_id: str, condition: Condition, rep: i
         "finished_at": _now(),
         "exit_code": agent.exit_code,
         "timed_out": agent.timed_out,
+        "stalled": agent.stalled,
+        "infra_failure": infra_failure_reason(agent.stalled, agent.timed_out, session_metrics),
         "wall_seconds": agent.wall_seconds,
         "files_changed": files_changed,
         **graded,
@@ -111,14 +133,27 @@ def run_one(exp: Experiment, adapter, task_id: str, condition: Condition, rep: i
     return record
 
 
-def run_experiment(config: Path, workers: int | None, limit: int | None) -> int:
+def run_experiment(config: Path, workers: int | None, limit: int | None, retry_infra: bool = False) -> int:
     exp = load_experiment(config)
     adapter = ADAPTERS[exp.harness](exp.model)
     out_dir = RESULTS_DIR / exp.id
     out_dir.mkdir(parents=True, exist_ok=True)
-    done = set()
-    if (out_dir / "runs.jsonl").exists():
-        done = {json.loads(line)["run_id"] for line in (out_dir / "runs.jsonl").read_text(encoding="utf-8").splitlines() if line}
+    runs_path = out_dir / "runs.jsonl"
+    records = []
+    if runs_path.exists():
+        records = [json.loads(line) for line in runs_path.read_text(encoding="utf-8").splitlines() if line]
+    if retry_infra:
+        infra = [r for r in records if is_infra_failure(r)]
+        if infra:
+            with (out_dir / "runs.infra_dropped.jsonl").open("a", encoding="utf-8", newline="\n") as fh:
+                for r in infra:
+                    fh.write(json.dumps(r, ensure_ascii=False) + "\n")
+            records = [r for r in records if not is_infra_failure(r)]
+            runs_path.write_text(
+                "".join(json.dumps(r, ensure_ascii=False) + "\n" for r in records), encoding="utf-8", newline="\n"
+            )
+            print(f"re-queued {len(infra)} infra failures: {[r['run_id'] for r in infra]}", flush=True)
+    done = {r["run_id"] for r in records}
     manifest = {
         "experiment": exp.id,
         "title": exp.title,
@@ -153,7 +188,7 @@ def run_experiment(config: Path, workers: int | None, limit: int | None) -> int:
                 m = r["metrics"] or {}
                 print(
                     f"{_now()} {r['run_id']}: success={r['success']} cost=${m.get('cost_usd', 0):.4f} "
-                    f"tools={m.get('tool_calls')} wall={r['wall_seconds']}s failed={r['check_failed_steps']}",
+                    f"tools={m.get('tool_calls')} wall={r['wall_seconds']}s stalled={r['stalled']} failed={r['check_failed_steps']}",
                     flush=True,
                 )
             except Exception:
@@ -171,10 +206,11 @@ def main(argv: list[str] | None = None) -> int:
     run.add_argument("config", type=Path)
     run.add_argument("--workers", type=int)
     run.add_argument("--limit", type=int)
+    run.add_argument("--retry-infra", action="store_true", help="move hung/stalled runs to runs.infra_dropped.jsonl and rerun them")
     args = parser.parse_args(argv)
     if args.command == "selfcheck":
         return selfcheck()
-    return run_experiment(args.config, args.workers, args.limit)
+    return run_experiment(args.config, args.workers, args.limit, args.retry_infra)
 
 
 if __name__ == "__main__":

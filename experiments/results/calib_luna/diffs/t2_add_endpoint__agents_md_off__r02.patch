@@ -1,0 +1,79 @@
+diff --git a/taskapp/registry.py b/taskapp/registry.py
+index 468bc25..4b46e70 100644
+--- a/taskapp/registry.py
++++ b/taskapp/registry.py
+@@ -15,6 +15,7 @@ ROUTE_REGISTRY: list[Route] = [
+     Route("GET", "/health", "taskapp.routes.health:health", "HealthOut"),
+     Route("GET", "/projects", "taskapp.routes.projects:list_projects", "ProjectOut"),
+     Route("POST", "/projects", "taskapp.routes.projects:create_project", "ProjectOut"),
++    Route("GET", "/projects/{project_id}/stats", "taskapp.routes.projects:project_stats", "ProjectStatsOut"),
+     Route("GET", "/projects/{project_id}", "taskapp.routes.projects:get_project", "ProjectOut"),
+     Route("POST", "/projects/{project_id}/archive", "taskapp.routes.projects:archive_project", "ProjectOut"),
+     Route("GET", "/projects/{project_id}/tasks", "taskapp.routes.tasks:list_tasks", "TaskOut"),
+diff --git a/taskapp/routes/projects.py b/taskapp/routes/projects.py
+index c013ad4..a7b24bb 100644
+--- a/taskapp/routes/projects.py
++++ b/taskapp/routes/projects.py
+@@ -16,6 +16,10 @@ def get_project(store, request, project_id):
+     return HTTP_OK, project_service.get_project_or_404(store, parse_id(project_id, field="project_id"))
+ 
+ 
++def project_stats(store, request, project_id):
++    return HTTP_OK, project_service.project_stats(store, parse_id(project_id, field="project_id"))
++
++
+ def create_project(store, request):
+     owner_id = parse_positive_int(str(request.body.get("owner_id", "")), field="owner_id")
+     return HTTP_CREATED, project_service.create_project(store, request.body.get("name"), owner_id)
+diff --git a/taskapp/schemas/__init__.py b/taskapp/schemas/__init__.py
+index 2e2fe3f..cd7d912 100644
+--- a/taskapp/schemas/__init__.py
++++ b/taskapp/schemas/__init__.py
+@@ -3,7 +3,8 @@
+ from taskapp.schemas.comment import CommentOut
+ from taskapp.schemas.health import HealthOut
+ from taskapp.schemas.project import ProjectOut
++from taskapp.schemas.project_stats import ProjectStatsOut
+ from taskapp.schemas.task import TaskOut
+ from taskapp.schemas.user import UserOut
+ 
+-__all__ = ["CommentOut", "HealthOut", "ProjectOut", "TaskOut", "UserOut"]
++__all__ = ["CommentOut", "HealthOut", "ProjectOut", "ProjectStatsOut", "TaskOut", "UserOut"]
+diff --git a/taskapp/schemas/project_stats.py b/taskapp/schemas/project_stats.py
+new file mode 100644
+index 0000000..ab37d3a
+--- /dev/null
++++ b/taskapp/schemas/project_stats.py
+@@ -0,0 +1,5 @@
++from taskapp.schemas.base import Schema
++
++
++class ProjectStatsOut(Schema):
++    fields = ("project_id", "total", "by_status")
+diff --git a/taskapp/services/projects.py b/taskapp/services/projects.py
+index 1b94d9d..a9feae4 100644
+--- a/taskapp/services/projects.py
++++ b/taskapp/services/projects.py
+@@ -1,5 +1,6 @@
+ """Project use cases."""
+ 
++from taskapp.constants import TASK_STATUSES
+ from taskapp.errors import NotFoundError
+ from taskapp.models_generated import Project
+ from taskapp.services.users import get_user_or_404
+@@ -24,6 +25,15 @@ def create_project(store, name, owner_id: int) -> Project:
+     return get_repo(store, "projects").add(lambda i: Project(id=i, name=clean, owner_id=owner_id))
+ 
+ 
++def project_stats(store, project_id: int) -> dict:
++    get_project_or_404(store, project_id)
++    counts = {status: 0 for status in TASK_STATUSES}
++    for task in get_repo(store, "tasks").all():
++        if task.project_id == project_id and task.status in counts:
++            counts[task.status] += 1
++    return {"project_id": project_id, "total": sum(counts.values()), "by_status": counts}
++
++
+ def archive_project(store, project_id: int) -> Project:
+     project = get_project_or_404(store, project_id)
+     project.archived = True

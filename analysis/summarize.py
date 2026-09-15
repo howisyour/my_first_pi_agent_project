@@ -21,6 +21,8 @@ from matplotlib import font_manager  # noqa: E402
 from matplotlib.lines import Line2D  # noqa: E402
 from matplotlib.patches import FancyBboxPatch, Rectangle  # noqa: E402
 
+from bench.runner.cli import is_infra_failure  # noqa: E402
+
 REPO = Path(__file__).resolve().parents[1]
 RESULTS = REPO / "experiments" / "results"
 FIGURES = REPO / "experiments" / "figures"
@@ -100,7 +102,7 @@ def _median(values: list[float]) -> float | None:
     return statistics.median(values) if values else None
 
 
-def summarize(runs: list[dict], manifest: dict) -> list[dict]:
+def summarize(runs: list[dict], manifest: dict, dropped: list[dict] | None = None) -> list[dict]:
     task_order = manifest["config"]["tasks"]
     condition_order = [c["name"] for c in manifest["config"]["conditions"]]
     groups: dict[tuple[str, str], list[dict]] = defaultdict(list)
@@ -109,7 +111,9 @@ def summarize(runs: list[dict], manifest: dict) -> list[dict]:
     rows = []
     for task in task_order:
         for condition in condition_order:
-            group = groups.get((task, condition), [])
+            everything = groups.get((task, condition), [])
+            infra_pending = [r for r in everything if is_infra_failure(r)]
+            group = [r for r in everything if not is_infra_failure(r)]
             if not group:
                 continue
             metrics = [r["metrics"] or {} for r in group]
@@ -144,6 +148,8 @@ def summarize(runs: list[dict], manifest: dict) -> list[dict]:
                 "transport_failures_total": sum(m.get("transport_failures", 0) for m in metrics),
                 "tampered_runs": sum(1 for r in group if r["tampered_protected_files"]),
                 "timeouts": sum(1 for r in group if r["timed_out"]),
+                "infra_retried": sum(1 for d in dropped or [] if d["task"] == task and d["condition"] == condition),
+                "infra_pending": len(infra_pending),
                 "failure_steps": dict(failure_steps),
             })
     return rows
@@ -169,6 +175,24 @@ def write_tables(exp: str, rows: list[dict]) -> None:
             f"| ${r['cost_median_usd']:.4f} | {r['tokens_median']:,.0f} | {r['tool_calls_median']:.0f} "
             f"| {r['wall_seconds_median']:.0f}s | {r['ran_check_script']}/{r['n']} | {steps} |"
         )
+    retried = [r for r in rows if r["infra_retried"]]
+    if retried:
+        detail = "、".join(
+            f"{TASK_LABELS.get(r['task'], r['task'])}／{CONDITION_LABELS.get(r['condition'], r['condition'])}"
+            f"×{r['infra_retried']}"
+            for r in retried
+        )
+        total = sum(r["infra_retried"] for r in retried)
+        lines += ["", f"另有 {total} 次執行因 harness 或網路卡住（連續無輸出）被判定為基礎設施失敗並重跑，不計入成功率：{detail}。"]
+    pending = [r for r in rows if r["infra_pending"]]
+    if pending:
+        detail = "、".join(
+            f"{TASK_LABELS.get(r['task'], r['task'])}／{CONDITION_LABELS.get(r['condition'], r['condition'])}"
+            f"×{r['infra_pending']}"
+            for r in pending
+        )
+        total = sum(r["infra_pending"] for r in pending)
+        lines += ["", f"另有 {total} 次執行是基礎設施失敗（harness 卡住或 provider 錯誤），尚未重跑，不計入上表：{detail}。"]
     (out / "summary.md").write_text("\n".join(lines) + "\n", encoding="utf-8")
 
 
@@ -261,7 +285,10 @@ def dot_figure(exp: str, runs: list[dict], manifest: dict, metric: str, title: s
     values_all = []
     for ci, condition in enumerate(conditions):
         for task in tasks:
-            group = [r for r in runs if r["task"] == task and r["condition"] == condition and r["metrics"]]
+            group = [
+                r for r in runs
+                if r["task"] == task and r["condition"] == condition and r["metrics"] and not is_infra_failure(r)
+            ]
             values = [r["metrics"][metric] for r in group]
             if not values:
                 continue
@@ -304,7 +331,11 @@ def main(argv: list[str] | None = None) -> int:
     setup_style()
     FIGURES.mkdir(parents=True, exist_ok=True)
     runs, manifest = load_runs(args.experiment)
-    rows = summarize(runs, manifest)
+    dropped_path = RESULTS / args.experiment / "runs.infra_dropped.jsonl"
+    dropped = []
+    if dropped_path.exists():
+        dropped = [json.loads(line) for line in dropped_path.read_text(encoding="utf-8").splitlines() if line]
+    rows = summarize(runs, manifest, dropped)
     write_tables(args.experiment, rows)
     paths = [
         success_figure(args.experiment, rows, manifest),

@@ -16,6 +16,7 @@ class AgentRun:
     session_path: Path | None
     stdout_path: Path
     stderr_path: Path
+    stalled: bool = False
 
 
 class HarnessAdapter(Protocol):

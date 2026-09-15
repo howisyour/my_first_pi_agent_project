@@ -1,0 +1,14 @@
+diff --git a/taskapp/constants.py b/taskapp/constants.py
+index 4425fd6..0237885 100644
+--- a/taskapp/constants.py
++++ b/taskapp/constants.py
+@@ -11,7 +11,8 @@ HTTP_INTERNAL_ERROR = 500
+ MAX_TITLE_LENGTH = 120
+ MAX_COMMENT_LENGTH = 2000
+ 
+-DEFAULT_PAGE_SIZE = 20
++LIST_PAGE_SIZE = 25
++SEARCH_PAGE_SIZE = 10
+ MAX_PAGE_SIZE = 100
+ 
+ PRIORITY_MIN = 1

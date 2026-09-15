@@ -25,7 +25,7 @@ def parse_session(path: Path) -> dict:
     bash_commands: list[str] = []
     read_paths: list[str] = []
     timestamps: list[datetime] = []
-    model = thinking = None
+    model = thinking = error_message = None
     final_text = ""
 
     for line in path.read_text(encoding="utf-8").splitlines():
@@ -51,6 +51,8 @@ def parse_session(path: Path) -> dict:
                     usage[key] += u.get(key) or 0
                 cost += (u.get("cost") or {}).get("total") or 0.0
                 stop_reasons[message.get("stopReason")] += 1
+                if message.get("errorMessage"):
+                    error_message = message["errorMessage"]
                 transport_failures += sum(
                     1 for d in message.get("diagnostics") or [] if d.get("type") == "provider_transport_failure"
                 )
@@ -87,6 +89,7 @@ def parse_session(path: Path) -> dict:
         "total_tokens": usage["totalTokens"],
         "cost_usd": round(cost, 6),
         "stop_reasons": dict(stop_reasons),
+        "error_message": error_message,
         "transport_failures": transport_failures,
         "compactions": compactions,
         "duration_seconds": (max(timestamps) - min(timestamps)).total_seconds() if len(timestamps) > 1 else None,

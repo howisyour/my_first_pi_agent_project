@@ -1,0 +1,146 @@
+diff --git a/taskapp/constants.py b/taskapp/constants.py
+index 4425fd6..0237885 100644
+--- a/taskapp/constants.py
++++ b/taskapp/constants.py
+@@ -11,7 +11,8 @@ HTTP_INTERNAL_ERROR = 500
+ MAX_TITLE_LENGTH = 120
+ MAX_COMMENT_LENGTH = 2000
+ 
+-DEFAULT_PAGE_SIZE = 20
++LIST_PAGE_SIZE = 25
++SEARCH_PAGE_SIZE = 10
+ MAX_PAGE_SIZE = 100
+ 
+ PRIORITY_MIN = 1
+diff --git a/taskapp/routes/projects.py b/taskapp/routes/projects.py
+index c013ad4..a1c99e3 100644
+--- a/taskapp/routes/projects.py
++++ b/taskapp/routes/projects.py
+@@ -1,6 +1,6 @@
+ """Project routes."""
+ 
+-from taskapp.constants import DEFAULT_PAGE_SIZE, HTTP_CREATED, HTTP_OK
++from taskapp.constants import LIST_PAGE_SIZE, HTTP_CREATED, HTTP_OK
+ from taskapp.services import projects as project_service
+ from taskapp.services.pagination import paginate
+ from taskapp.utils.ids import parse_id, parse_positive_int
+@@ -8,7 +8,7 @@ from taskapp.utils.querystring import parse_page_params
+ 
+ 
+ def list_projects(store, request):
+-    page, size = parse_page_params(request.query, default_size=DEFAULT_PAGE_SIZE)
++    page, size = parse_page_params(request.query, default_size=LIST_PAGE_SIZE)
+     return HTTP_OK, paginate(project_service.list_projects(store), page=page, page_size=size)
+ 
+ 
+diff --git a/taskapp/routes/tasks.py b/taskapp/routes/tasks.py
+index 844dae6..8bbdb1c 100644
+--- a/taskapp/routes/tasks.py
++++ b/taskapp/routes/tasks.py
+@@ -1,6 +1,6 @@
+ """Task routes."""
+ 
+-from taskapp.constants import DEFAULT_PAGE_SIZE, DEFAULT_PRIORITY, HTTP_CREATED, HTTP_OK
++from taskapp.constants import LIST_PAGE_SIZE, SEARCH_PAGE_SIZE, DEFAULT_PRIORITY, HTTP_CREATED, HTTP_OK
+ from taskapp.services import tasks as task_service
+ from taskapp.services.pagination import paginate
+ from taskapp.utils.ids import parse_id
+@@ -8,7 +8,7 @@ from taskapp.utils.querystring import parse_page_params
+ 
+ 
+ def list_tasks(store, request, project_id):
+-    page, size = parse_page_params(request.query, default_size=DEFAULT_PAGE_SIZE)
++    page, size = parse_page_params(request.query, default_size=LIST_PAGE_SIZE)
+     items = task_service.tasks_for_project(store, parse_id(project_id, field="project_id"))
+     return HTTP_OK, paginate(items, page=page, page_size=size)
+ 
+@@ -24,7 +24,7 @@ def create_task(store, request, project_id):
+ 
+ 
+ def search_tasks(store, request):
+-    page, size = parse_page_params(request.query, default_size=DEFAULT_PAGE_SIZE)
++    page, size = parse_page_params(request.query, default_size=SEARCH_PAGE_SIZE)
+     return HTTP_OK, task_service.search_tasks(store, request.query.get("q", ""), page=page, page_size=size)
+ 
+ 
+diff --git a/taskapp/routes/users.py b/taskapp/routes/users.py
+index 09f51e9..97f5f5a 100644
+--- a/taskapp/routes/users.py
++++ b/taskapp/routes/users.py
+@@ -1,6 +1,6 @@
+ """User routes."""
+ 
+-from taskapp.constants import DEFAULT_PAGE_SIZE, HTTP_OK
++from taskapp.constants import LIST_PAGE_SIZE, HTTP_OK
+ from taskapp.services import users as user_service
+ from taskapp.services.pagination import paginate
+ from taskapp.utils.ids import parse_id
+@@ -8,7 +8,7 @@ from taskapp.utils.querystring import parse_page_params
+ 
+ 
+ def list_users(store, request):
+-    page, size = parse_page_params(request.query, default_size=DEFAULT_PAGE_SIZE)
++    page, size = parse_page_params(request.query, default_size=LIST_PAGE_SIZE)
+     return HTTP_OK, paginate(user_service.list_users(store), page=page, page_size=size)
+ 
+ 
+diff --git a/taskapp/services/pagination.py b/taskapp/services/pagination.py
+index 20d4543..8f5de7c 100644
+--- a/taskapp/services/pagination.py
++++ b/taskapp/services/pagination.py
+@@ -5,7 +5,7 @@ from __future__ import annotations
+ from dataclasses import dataclass
+ from typing import Any
+ 
+-from taskapp.constants import DEFAULT_PAGE_SIZE, MAX_PAGE_SIZE
++from taskapp.constants import LIST_PAGE_SIZE, MAX_PAGE_SIZE
+ from taskapp.errors import ValidationError
+ 
+ 
+@@ -17,7 +17,7 @@ class Page:
+     has_next: bool
+ 
+ 
+-def paginate(items: list[Any], page: int = 1, page_size: int = DEFAULT_PAGE_SIZE) -> Page:
++def paginate(items: list[Any], page: int = 1, page_size: int = LIST_PAGE_SIZE) -> Page:
+     if page < 1:
+         raise ValidationError("page must be >= 1", code="INVALID_PAGE")
+     if page_size < 1 or page_size > MAX_PAGE_SIZE:
+diff --git a/taskapp/services/tasks.py b/taskapp/services/tasks.py
+index f3c96fc..e6c8d82 100644
+--- a/taskapp/services/tasks.py
++++ b/taskapp/services/tasks.py
+@@ -1,6 +1,6 @@
+ """Task use cases."""
+ 
+-from taskapp.constants import DEFAULT_PAGE_SIZE, DEFAULT_PRIORITY
++from taskapp.constants import SEARCH_PAGE_SIZE, DEFAULT_PRIORITY
+ from taskapp.errors import ConflictError, NotFoundError
+ from taskapp.models_generated import Task
+ from taskapp.services.pagination import Page, paginate
+@@ -43,7 +43,7 @@ def update_task(store, task_id: int, changes: dict) -> Task:
+     return get_repo(store, "tasks").save(task)
+ 
+ 
+-def search_tasks(store, query: str, page: int = 1, page_size: int = DEFAULT_PAGE_SIZE) -> Page:
++def search_tasks(store, query: str, page: int = 1, page_size: int = SEARCH_PAGE_SIZE) -> Page:
+     needle = query.strip().lower()
+     matches = [task for task in get_repo(store, "tasks").all() if needle in task.title.lower()]
+     return paginate(matches, page=page, page_size=page_size)
+diff --git a/taskapp/utils/querystring.py b/taskapp/utils/querystring.py
+index 2053f24..47f58c4 100644
+--- a/taskapp/utils/querystring.py
++++ b/taskapp/utils/querystring.py
+@@ -1,10 +1,10 @@
+ """Query-string parsing."""
+ 
+-from taskapp.constants import DEFAULT_PAGE_SIZE
++from taskapp.constants import LIST_PAGE_SIZE
+ from taskapp.utils.ids import parse_positive_int
+ 
+ 
+-def parse_page_params(query: dict[str, str], default_size: int = DEFAULT_PAGE_SIZE) -> tuple[int, int]:
++def parse_page_params(query: dict[str, str], default_size: int = LIST_PAGE_SIZE) -> tuple[int, int]:
+     page = parse_positive_int(query.get("page", "1"), field="page")
+     size = parse_positive_int(query.get("page_size", str(default_size)), field="page_size")
+     return page, size
