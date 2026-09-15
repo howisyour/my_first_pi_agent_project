@@ -1,0 +1,6 @@
+{
+  "id": "t1_fix_pagination",
+  "component": "baseline",
+  "prompt": "這個專案有一個單元測試沒過，請找出原因並修好。",
+  "timeout_seconds": 900
+}

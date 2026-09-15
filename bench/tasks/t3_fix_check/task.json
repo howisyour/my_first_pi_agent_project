@@ -1,0 +1,6 @@
+{
+  "id": "t3_fix_check",
+  "component": "agents_md",
+  "prompt": "CI 的品質檢查沒過，請把問題修到通過。",
+  "timeout_seconds": 900
+}

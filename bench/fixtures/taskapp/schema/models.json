@@ -1,0 +1,42 @@
+{
+  "version": 2,
+  "models": [
+    {
+      "name": "User",
+      "fields": [
+        {"name": "id", "type": "int"},
+        {"name": "username", "type": "str"},
+        {"name": "display_name", "type": "str", "default": "\"\""}
+      ]
+    },
+    {
+      "name": "Project",
+      "fields": [
+        {"name": "id", "type": "int"},
+        {"name": "name", "type": "str"},
+        {"name": "owner_id", "type": "int"},
+        {"name": "archived", "type": "bool", "default": "False"}
+      ]
+    },
+    {
+      "name": "Task",
+      "fields": [
+        {"name": "id", "type": "int"},
+        {"name": "project_id", "type": "int"},
+        {"name": "title", "type": "str"},
+        {"name": "status", "type": "str", "default": "\"open\""},
+        {"name": "priority", "type": "int", "default": "3"},
+        {"name": "assignee_id", "type": "int | None", "default": "None"}
+      ]
+    },
+    {
+      "name": "Comment",
+      "fields": [
+        {"name": "id", "type": "int"},
+        {"name": "task_id", "type": "int"},
+        {"name": "author_id", "type": "int"},
+        {"name": "body", "type": "str"}
+      ]
+    }
+  ]
+}

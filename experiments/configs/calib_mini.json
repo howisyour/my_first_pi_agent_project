@@ -1,0 +1,13 @@
+{
+  "id": "calib_mini",
+  "title": "校準第二步：luna 接近 100% 時改用較弱的 gpt-5.4-mini",
+  "harness": "pi",
+  "model": "openai-codex/gpt-5.4-mini",
+  "tasks": ["t1_fix_pagination", "t2_add_endpoint", "t3_fix_check", "t4_split_constant", "t5_migration"],
+  "conditions": [
+    {"name": "agents_md_on"},
+    {"name": "agents_md_off", "remove_files": ["AGENTS.md"]}
+  ],
+  "repetitions": 3,
+  "workers": 3
+}

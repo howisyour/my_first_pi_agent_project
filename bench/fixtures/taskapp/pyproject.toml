@@ -1,0 +1,17 @@
+[project]
+name = "taskapp"
+version = "0.3.0"
+description = "A tiny in-memory task tracker API."
+requires-python = ">=3.11"
+
+[tool.pytest.ini_options]
+testpaths = ["tests/unit"]
+pythonpath = ["."]
+addopts = "-q -p no:cacheprovider"
+
+[tool.ruff]
+line-length = 120
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP"]

@@ -1,0 +1,6 @@
+{
+  "id": "t2_add_endpoint",
+  "component": "agents_md",
+  "prompt": "請新增一個 API：GET /projects/{project_id}/stats，回傳該專案各狀態的任務數量。規格寫在 tests/contract/test_project_stats_api.py，請實作讓它通過。",
+  "timeout_seconds": 900
+}

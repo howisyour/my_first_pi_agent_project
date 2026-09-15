@@ -1,0 +1,13 @@
+{
+  "id": "e09_agents_md",
+  "title": "Day 9：有／無 AGENTS.md",
+  "harness": "pi",
+  "model": "openai-codex/gpt-5.6-luna",
+  "tasks": ["t1_fix_pagination", "t2_add_endpoint", "t3_fix_check"],
+  "conditions": [
+    {"name": "agents_md_on"},
+    {"name": "agents_md_off", "remove_files": ["AGENTS.md"]}
+  ],
+  "repetitions": 5,
+  "workers": 3
+}

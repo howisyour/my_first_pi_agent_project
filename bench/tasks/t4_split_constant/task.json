@@ -1,0 +1,6 @@
+{
+  "id": "t4_split_constant",
+  "component": "search_tools",
+  "prompt": "請把常數 DEFAULT_PAGE_SIZE 拆成兩個：一般列表 API 用的 LIST_PAGE_SIZE（值為 25），以及搜尋 API（/tasks/search）用的 SEARCH_PAGE_SIZE（值為 10）。改完之後 taskapp 的程式碼裡不能再出現 DEFAULT_PAGE_SIZE。",
+  "timeout_seconds": 900
+}

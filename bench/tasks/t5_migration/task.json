@@ -1,0 +1,6 @@
+{
+  "id": "t5_migration",
+  "component": "skills",
+  "prompt": "Task 模型要新增一個欄位 due_date（型別 str | None，預設 None，內容是 ISO 8601 日期字串），API 回傳的任務資料也要包含這個欄位。請依照這個專案的資料遷移流程完成這個變更。",
+  "timeout_seconds": 900
+}

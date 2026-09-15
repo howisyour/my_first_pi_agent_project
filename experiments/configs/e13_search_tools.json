@@ -1,0 +1,13 @@
+{
+  "id": "e13_search_tools",
+  "title": "Day 13：預設工具 vs 加上 grep/find/ls",
+  "harness": "pi",
+  "model": "openai-codex/gpt-5.6-luna",
+  "tasks": ["t4_split_constant"],
+  "conditions": [
+    {"name": "default_tools"},
+    {"name": "search_tools", "tools": ["read", "bash", "edit", "write", "grep", "find", "ls"]}
+  ],
+  "repetitions": 5,
+  "workers": 3
+}
