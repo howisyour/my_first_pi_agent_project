@@ -1,0 +1,24 @@
+{
+  "id": "e15_system_prompt",
+  "title": "Day 15（彈性格）：同樣的規則，放 AGENTS.md vs 灌進 system prompt",
+  "harness": "pi",
+  "model": "openai-codex/gpt-5.6-luna",
+  "tasks": [
+    "t2_add_endpoint",
+    "t3_fix_check"
+  ],
+  "conditions": [
+    {
+      "name": "agents_md_on"
+    },
+    {
+      "name": "appended_prompt",
+      "remove_files": [
+        "AGENTS.md"
+      ],
+      "append_system_prompt": "# AGENTS.md\n\n## Definition of done\n- Run `python scripts/check.py` and make sure it exits 0 before you finish.\n  `python -m pytest` only runs unit tests; passing it does not mean the change is done.\n\n## Adding an API endpoint (all three are required)\n1. Handler in `taskapp/routes/<module>.py`, returning `(status, payload)`.\n2. Export the response schema from `taskapp/schemas/__init__.py` and add it to `__all__`.\n3. Add a `Route(...)` to `ROUTE_REGISTRY` in `taskapp/registry.py`.\n\n## Errors\n- Raise `AppError` subclasses from `taskapp/errors.py` (`NotFoundError`, `ValidationError`, ...)\n  with a specific `code`. Never raise `ValueError`, `KeyError`, `Exception` from routes or services.\n\n## Generated code\n- Never edit `taskapp/models_generated.py`. Change `schema/models.json`, then run\n  `python scripts/gen_models.py`.\n\n## Constants\n- No numeric literals other than 0, 1, -1 in `taskapp/routes/` or `taskapp/services/`.\n  Add them to `taskapp/constants.py`.\n\n## Contract tests\n- `tests/contract/` needs the plugin: `python -m pytest -p taskapp_testing.plugin tests/contract`.\n\n## Migrations\n- Model changes follow `docs/migrations.md`.\n"
+    }
+  ],
+  "repetitions": 5,
+  "workers": 3
+}

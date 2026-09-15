@@ -47,21 +47,28 @@ def main(argv: list[str]) -> int:
         if line
     ]
     manifest = json.loads((RESULTS / experiment / "manifest.json").read_text(encoding="utf-8"))
+    # condition == "ALL": one row per condition instead of one row per task.
+    by_condition = condition == "ALL"
     per_task: dict[str, dict[str, float]] = defaultdict(lambda: defaultdict(float))
     counts: dict[str, int] = defaultdict(int)
     for run in runs:
-        if run["condition"] != condition or not run["metrics"] or is_infra_failure(run):
+        if (not by_condition and run["condition"] != condition) or not run["metrics"] or is_infra_failure(run):
             continue
-        counts[run["task"]] += 1
+        key = run["condition"] if by_condition else run["task"]
+        counts[key] += 1
         for name, calls in run["metrics"]["tool_calls_by_name"].items():
-            per_task[run["task"]][name] += calls
-    tasks = [t for t in manifest["config"]["tasks"] if t in per_task]
+            per_task[key][name] += calls
+    if by_condition:
+        tasks = [c["name"] for c in manifest["config"]["conditions"] if c["name"] in per_task]
+    else:
+        tasks = [t for t in manifest["config"]["tasks"] if t in per_task]
     tools = TOOL_ORDER + sorted({n for task in per_task.values() for n in task} - set(TOOL_ORDER))
 
     header_in, footer_in = 1.05, 0.6
     height = header_in + 0.52 * len(tasks) + 0.4 + footer_in
     fig, ax = plt.subplots(figsize=(7.2, height), dpi=DPI)
-    fig.subplots_adjust(left=0.2, right=0.95, top=1 - header_in / height, bottom=footer_in / height)
+    fig.subplots_adjust(left=0.3 if by_condition else 0.2, right=0.95, top=1 - header_in / height,
+                        bottom=footer_in / height)
     totals = [sum(per_task[t].values()) / counts[t] for t in tasks]
     ax.set_xlim(0, max(totals) * 1.12)
     ax.set_ylim(-0.6, len(tasks) - 0.4)
@@ -93,7 +100,8 @@ def main(argv: list[str]) -> int:
             x += value
         ax.text(x + max(totals) * 0.012, y, f"{x:.0f} 次", va="center", ha="left", fontsize=9, color=INK_2)
 
-    ax.set_yticks(range(len(tasks) - 1, -1, -1), [TASK_LABELS.get(t, t) for t in tasks])
+    labels = [(CONDITION_LABELS if by_condition else TASK_LABELS).get(t, t) for t in tasks]
+    ax.set_yticks(range(len(tasks) - 1, -1, -1), labels)
     for side in ("top", "right", "left"):
         ax.spines[side].set_visible(False)
     ax.spines["bottom"].set_color(AXIS)
@@ -105,11 +113,15 @@ def main(argv: list[str]) -> int:
     ax.tick_params(axis="y", colors=INK_2)
 
     h = fig.get_figheight()
-    fig.text(0.015, 1 - 0.1 / h, "每個任務用了哪些工具", ha="left", va="top", fontsize=14, color=INK, fontweight="bold")
-    fig.text(0.015, 1 - 0.43 / h,
-             f"{CONDITION_LABELS.get(condition, condition)}，每格取 n={min(counts.values())} 次執行的平均；"
-             f"Pi 預設只開 read／bash／edit／write",
-             ha="left", va="top", fontsize=9.5, color=INK_2)
+    title = "開了搜尋工具之後，agent 改用什麼" if by_condition else "每個任務用了哪些工具"
+    fig.text(0.015, 1 - 0.1 / h, title, ha="left", va="top", fontsize=14, color=INK, fontweight="bold")
+    subtitle = (
+        f"同一個任務、兩種工具設定（預設為 read/bash/edit/write），每格取 n={min(counts.values())} 次執行的平均"
+        if by_condition
+        else f"{CONDITION_LABELS.get(condition, condition)}，每格取 n={min(counts.values())} 次執行的平均；"
+        f"Pi 預設只開 read／bash／edit／write"
+    )
+    fig.text(0.015, 1 - 0.43 / h, subtitle, ha="left", va="top", fontsize=9.5, color=INK_2)
     handles = [
         Line2D([], [], marker="s", linestyle="", markersize=px(10), markerfacecolor=SERIES[i % len(SERIES)],
                markeredgewidth=0, label=name)

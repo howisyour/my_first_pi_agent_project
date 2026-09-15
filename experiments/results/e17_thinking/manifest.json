@@ -1,0 +1,35 @@
+{
+  "experiment": "e17_thinking",
+  "title": "Day 17：thinking level off／low／high 的成本曲線",
+  "harness": "pi",
+  "harness_version": "0.84.3",
+  "model": "openai-codex/gpt-5.6-luna",
+  "platform": "Windows-11-10.0.26200-SP0",
+  "python": "3.13.7",
+  "config": {
+    "id": "e17_thinking",
+    "title": "Day 17：thinking level off／low／high 的成本曲線",
+    "harness": "pi",
+    "model": "openai-codex/gpt-5.6-luna",
+    "tasks": [
+      "t2_add_endpoint",
+      "t5_migration"
+    ],
+    "conditions": [
+      {
+        "name": "thinking_off",
+        "thinking": "off"
+      },
+      {
+        "name": "thinking_low",
+        "thinking": "low"
+      },
+      {
+        "name": "thinking_high",
+        "thinking": "high"
+      }
+    ],
+    "repetitions": 5,
+    "workers": 3
+  }
+}

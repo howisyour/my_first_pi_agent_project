@@ -1,0 +1,10 @@
+diff --git a/taskapp/services/pagination.py b/taskapp/services/pagination.py
+index 3d66f98..20d4543 100644
+--- a/taskapp/services/pagination.py
++++ b/taskapp/services/pagination.py
+@@ -24,4 +24,4 @@ def paginate(items: list[Any], page: int = 1, page_size: int = DEFAULT_PAGE_SIZE
+         raise ValidationError("page_size out of range", code="INVALID_PAGE_SIZE")
+     start = (page - 1) * page_size
+     end = start + page_size
+-    return Page(items=items[start:end], page=page, page_size=page_size, has_next=end <= len(items))
++    return Page(items=items[start:end], page=page, page_size=page_size, has_next=end < len(items))

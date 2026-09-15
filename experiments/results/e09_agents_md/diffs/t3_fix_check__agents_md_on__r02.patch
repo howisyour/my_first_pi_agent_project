@@ -1,0 +1,50 @@
+diff --git a/taskapp/services/users.py b/taskapp/services/users.py
+index a001ff3..6a07fd5 100644
+--- a/taskapp/services/users.py
++++ b/taskapp/services/users.py
+@@ -8,7 +8,7 @@ from taskapp.storage.repository import get_repo
+ def get_user_or_404(store, user_id: int) -> User:
+     user = get_repo(store, "users").get(user_id)
+     if user is None:
+-        raise ValueError(f"user {user_id} not found")
++        raise NotFoundError(f"user {user_id} not found", code="USER_NOT_FOUND")
+     return user
+ 
+ 
+diff --git a/taskapp/services/validation.py b/taskapp/services/validation.py
+index 8d13bb8..7931e97 100644
+--- a/taskapp/services/validation.py
++++ b/taskapp/services/validation.py
+@@ -1,6 +1,12 @@
+ """Input validation."""
+ 
+-from taskapp.constants import MAX_TITLE_LENGTH, PRIORITY_MAX, PRIORITY_MIN, TASK_STATUSES
++from taskapp.constants import (
++    MAX_COMMENT_LENGTH,
++    MAX_TITLE_LENGTH,
++    PRIORITY_MAX,
++    PRIORITY_MIN,
++    TASK_STATUSES,
++)
+ from taskapp.errors import ValidationError
+ from taskapp.utils.text import normalize_title
+ 
+@@ -27,6 +33,6 @@ def validate_status(raw) -> str:
+ 
+ 
+ def validate_comment_body(raw) -> str:
+-    if not isinstance(raw, str) or not raw.strip() or len(raw) > 2000:
++    if not isinstance(raw, str) or not raw.strip() or len(raw) > MAX_COMMENT_LENGTH:
+         raise ValidationError("comment body length out of range", code="INVALID_COMMENT")
+     return raw.strip()
+diff --git a/taskapp/utils/timeutil.py b/taskapp/utils/timeutil.py
+index 49dd14f..f8629bf 100644
+--- a/taskapp/utils/timeutil.py
++++ b/taskapp/utils/timeutil.py
+@@ -1,6 +1,5 @@
+ """Time helpers."""
+ 
+-import os
+ from datetime import UTC, datetime
+ 
+ 

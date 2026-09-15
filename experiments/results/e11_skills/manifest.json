@@ -1,0 +1,37 @@
+{
+  "experiment": "e11_skills",
+  "title": "Day 11：Skills 開／關（兩組都拿掉 AGENTS.md，docs/ 都在）",
+  "harness": "pi",
+  "harness_version": "0.84.3",
+  "model": "openai-codex/gpt-5.6-luna",
+  "platform": "Windows-11-10.0.26200-SP0",
+  "python": "3.13.7",
+  "config": {
+    "id": "e11_skills",
+    "title": "Day 11：Skills 開／關（兩組都拿掉 AGENTS.md，docs/ 都在）",
+    "harness": "pi",
+    "model": "openai-codex/gpt-5.6-luna",
+    "tasks": [
+      "t5_migration"
+    ],
+    "conditions": [
+      {
+        "name": "skill_off",
+        "remove_files": [
+          "AGENTS.md"
+        ]
+      },
+      {
+        "name": "skill_on",
+        "remove_files": [
+          "AGENTS.md"
+        ],
+        "skills": [
+          "bench/skills/taskapp-migration"
+        ]
+      }
+    ],
+    "repetitions": 5,
+    "workers": 3
+  }
+}
