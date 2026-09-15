@@ -33,7 +33,8 @@ INK_2 = "#52514e"
 MUTED = "#898781"
 GRID = "#e1e0d9"
 AXIS = "#c3c2b7"
-SERIES = ["#2a78d6", "#eb6834", "#1baf7a"]
+# Documented categorical order (blue, orange, aqua, yellow, magenta, green, violet, red).
+SERIES = ["#2a78d6", "#eb6834", "#1baf7a", "#eda100", "#e87ba4", "#008300", "#4a3aa7", "#e34948"]
 
 DPI = 200
 DISPLAY_SCALE = 2  # PNGs are shown at ~half size in articles; 1 CSS px = 2 image px
