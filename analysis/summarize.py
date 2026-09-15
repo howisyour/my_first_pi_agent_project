@@ -340,6 +340,8 @@ def main(argv: list[str] | None = None) -> int:
     paths = [
         success_figure(args.experiment, rows, manifest),
         dot_figure(args.experiment, runs, manifest, "cost_usd", "每次執行的成本", "美元／次", lambda v: f"${v:.4f}"),
+        dot_figure(args.experiment, runs, manifest, "total_tokens", "每次執行用掉的 tokens", "tokens／次",
+                   lambda v: f"{v / 1000:.0f}K"),
         dot_figure(args.experiment, runs, manifest, "tool_calls", "每次執行的工具呼叫次數", "次", lambda v: f"{v:.0f}"),
     ]
     print((RESULTS / args.experiment / "summary.md").read_text(encoding="utf-8"))

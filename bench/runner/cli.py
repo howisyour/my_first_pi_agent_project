@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import platform
 import sys
 import threading
@@ -179,6 +180,8 @@ def run_experiment(config: Path, workers: int | None, limit: int | None, retry_i
     print(f"{exp.id}: {len(jobs)} runs to do ({len(done)} already recorded)", flush=True)
     sanitize = build_sanitizer()
     failures = 0
+    consecutive_infra = 0
+    breaker = int(os.environ.get("BENCH_INFRA_BREAKER", "3"))
     with ThreadPoolExecutor(max_workers=workers or exp.workers) as pool:
         futures = {pool.submit(run_one, exp, adapter, *job, sanitize): job for job in jobs}
         for future in as_completed(futures):
@@ -188,9 +191,17 @@ def run_experiment(config: Path, workers: int | None, limit: int | None, retry_i
                 m = r["metrics"] or {}
                 print(
                     f"{_now()} {r['run_id']}: success={r['success']} cost=${m.get('cost_usd', 0):.4f} "
-                    f"tools={m.get('tool_calls')} wall={r['wall_seconds']}s stalled={r['stalled']} failed={r['check_failed_steps']}",
+                    f"tools={m.get('tool_calls')} wall={r['wall_seconds']}s infra={r['infra_failure']} "
+                    f"failed={r['check_failed_steps']}",
                     flush=True,
                 )
+                consecutive_infra = consecutive_infra + 1 if r["infra_failure"] else 0
+                if consecutive_infra >= breaker:
+                    print(f"{_now()} ABORT: {breaker} infra failures in a row (provider down or quota exhausted?)", flush=True)
+                    for pending in futures:
+                        pending.cancel()
+                    failures += 1
+                    break
             except Exception:
                 failures += 1
                 print(f"{_now()} {task_id}__{condition.name}__r{rep:02d}: RUNNER ERROR", flush=True)
