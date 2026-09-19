@@ -1,0 +1,5 @@
+task,condition,n,successes,success_rate,ci95_low,ci95_high,cost_median_usd,cost_min_usd,cost_max_usd,tokens_median,tool_calls_median,assistant_turns_median,wall_seconds_median,ran_check_script,read_docs_runs,skill_file_read,bash_search_runs,grep_tool_runs,tool_errors_total,transport_failures_total,tampered_runs,timeouts,infra_retried,infra_pending,failure_steps
+t2_add_endpoint,agents_md_on,5,5,1.0,0.566,1.0,0.007568,0.006388,0.009323,77234,30,11,74.74,5,1,0,5,0,4,0,0,0,1,0,{}
+t2_add_endpoint,appended_prompt,5,5,1.0,0.566,1.0,0.006315,0.004578,0.007874,75789,29,11,109.79,5,0,0,5,0,4,0,0,0,0,0,{}
+t3_fix_check,agents_md_on,5,5,1.0,0.566,1.0,0.003158,0.00254,0.004708,31675,13,7,60.89,5,0,0,3,0,5,0,0,0,0,0,{}
+t3_fix_check,appended_prompt,5,5,1.0,0.566,1.0,0.004339,0.002741,0.005372,34649,15,8,32.87,5,0,0,3,0,5,1,0,0,0,0,{}

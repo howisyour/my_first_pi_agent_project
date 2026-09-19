@@ -78,6 +78,10 @@ python -m analysis.summarize e09_agents_md
 
 runner 只依賴 `bench/runner/adapters/base.py` 的 `HarnessAdapter` 介面：給一個工作目錄、prompt、條件，回傳 exit code 與 session 檔。任務、條件、驗收都跟 harness 無關，寫一個 Claude Code 或 Codex 的 adapter 就能跑同一組任務。
 
+## 授權
+
+程式碼與實驗資料採用 [MIT License](LICENSE)：可以自由使用、修改、再散布（包含商業用途），只要保留原作者與授權聲明。
+
 ## 資料與隱私
 
 `experiments/results/` 裡的 session 與 diff 在寫出前會把本機家目錄、使用者名稱、電腦名稱、工作目錄換成 `<HOME>`、`<user>`、`<host>`、`<RUNS>`。session 中的 reasoning 是 provider 回傳的加密內容，無法還原。

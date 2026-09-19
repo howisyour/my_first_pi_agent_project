@@ -74,6 +74,9 @@ def infra_failure_reason(stalled: bool, timed_out: bool, metrics: dict | None) -
     stops = metrics.get("stop_reasons") or {}
     if metrics.get("tool_calls", 0) == 0 and set(stops) <= {"error", "aborted"}:
         return f"provider_error: {metrics.get('error_message')}"
+    # The run never reached a final answer and the provider errored along the way (e.g. "servers overloaded").
+    if "stop" not in stops and stops.get("error", 0) > 0:
+        return f"provider_error_midrun: {metrics.get('error_message')}"
     if timed_out and "stop" not in stops and metrics.get("assistant_messages", 0) <= 5:
         return "hung_before_timeout"
     return None

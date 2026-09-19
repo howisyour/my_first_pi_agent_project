@@ -185,7 +185,7 @@ def write_tables(exp: str, rows: list[dict]) -> None:
             for r in retried
         )
         total = sum(r["infra_retried"] for r in retried)
-        lines += ["", f"另有 {total} 次執行因 harness 或網路卡住（連續無輸出）被判定為基礎設施失敗並重跑，不計入成功率：{detail}。"]
+        lines += ["", f"另有 {total} 次執行是基礎設施失敗（harness 卡住或服務商錯誤），已重跑，不計入成功率：{detail}。"]
     pending = [r for r in rows if r["infra_pending"]]
     if pending:
         detail = "、".join(
