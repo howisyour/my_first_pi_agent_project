@@ -19,5 +19,7 @@
 | e17_thinking | T5 資料遷移 | thinking high vs thinking off | 5 | 5/5 → 5/5 | +11.4% | -27.3% ~ +45.6% | 否 |
 | e17_thinking | T5 資料遷移 | thinking high vs thinking low | 5 | 5/5 → 5/5 | +66.2% | +29.5% ~ +115.1% | 是 |
 | e22_compaction | T5 資料遷移 | 強制觸發 compaction vs 不會觸發 compaction | 5 | 5/5 → 5/5 | +45.7% | +3.9% ~ +76.2% | 是 |
+| e26_tool_gate | T7 清暫存檔 | 閘門 v1 vs 沒有閘門 | 5 | 5/5 → 2/5 | +41.9% | -5.3% ~ +80.8% | 否 |
+| e28_sandbox | T2 新增 endpoint | docker vs host | 5 | 5/5 → 5/5 | +11.6% | -28.2% ~ +41.9% | 否 |
 
-共 19 組比較，其中 6 組的區間不含 0。CI 為 10,000 次 percentile bootstrap；n 是每組的執行次數。
+共 21 組比較，其中 6 組的區間不含 0。CI 為 10,000 次 percentile bootstrap；n 是每組的執行次數。

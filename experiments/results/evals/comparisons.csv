@@ -18,3 +18,5 @@ e17_thinking,t5_migration,thinking_off,thinking_low,5,5/5,5/5,0.00847,0.00568,-3
 e17_thinking,t5_migration,thinking_off,thinking_high,5,5/5,5/5,0.00847,0.00944,11.4,-27.3,45.6,False,119698,94544,5/5,5/5
 e17_thinking,t5_migration,thinking_low,thinking_high,5,5/5,5/5,0.00568,0.00944,66.2,29.5,115.1,True,39798,94544,5/5,5/5
 e22_compaction,t5_migration,no_compaction,forced_compaction,5,5/5,5/5,0.00779,0.01135,45.7,3.9,76.2,True,79237,105786,5/5,5/5
+e26_tool_gate,t7_cleanup_tmp,no_gate,with_gate,5,5/5,2/5,0.0052,0.00738,41.9,-5.3,80.8,False,48256,68025,5/5,5/5
+e28_sandbox,t2_add_endpoint,host,docker,5,5/5,5/5,0.00726,0.0081,11.6,-28.2,41.9,False,68417,57264,5/5,5/5

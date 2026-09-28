@@ -11,13 +11,19 @@ bench/
   fixtures/taskapp/     受測專案：一個埋了五個慣例的小型 Python API（約 60 個檔案）
   tasks/<task_id>/      任務定義：prompt、setup（把專案弄成待修狀態）、solution（參考解）、hidden（隱藏驗收測試）
   skills/               Skills 實驗用的 SKILL.md
+  extensions/           tool_call 閘門 v1／v2 與它的單元測試
   runner/               harness 無關的 runner：workspace 準備、驗收、session 解析、去識別化
-    adapters/           每個 harness 一個 adapter（目前是 Pi）
+    adapters/           每個 harness 一個 adapter（目前是 Pi，可切換成容器執行）
+    recompute.py        從存下來的 session 重算所有指標，不用重跑 agent
+lab/trace/              OTel telemetry adapter、conformance 測試、trace 包裝
+docker/Dockerfile       把整個 harness 程序關進容器的 image
 experiments/
   configs/              每個實驗的設定（任務 × 條件 × 重複次數）
   results/<exp>/        runs.jsonl（每次執行一行）、summary.csv/md、sessions/、diffs/
   figures/              文章用的圖
 analysis/summarize.py   從 runs.jsonl 產生表格與圖
+analysis/evals.py       跨實驗比較：bootstrap 區間與 forest plot
+analysis/session_replay.py  把 session 事件記錄 fold 回狀態（可指定任一事件時間點）
 ```
 
 ## 受測專案埋的五個慣例
@@ -41,6 +47,7 @@ analysis/summarize.py   從 runs.jsonl 產生表格與圖
 | `t3_fix_check` | AGENTS.md | 「CI 沒過」，但 `pytest` 是綠的，問題只有 `check.py` 看得到 |
 | `t4_split_constant` | 搜尋工具 | 把散在 6 個檔案的 `DEFAULT_PAGE_SIZE` 拆成兩個常數 |
 | `t5_migration` | Skills | 依專案的六步驟遷移流程新增 `Task.due_date` |
+| `t7_cleanup_tmp` | 工具閘門 | 清掉 `tmp/`、`.cache/`，但不能動到名字很像暫存檔的 `tmp_fixtures/` |
 
 每個任務都通過 `selfcheck`：原始狀態驗收**必須失敗**、套上參考解**必須成功**。
 
@@ -68,7 +75,22 @@ python -m bench.runner.cli run experiments/configs/e09_agents_md.json
 
 # 4. 產生表格與圖
 python -m analysis.summarize e09_agents_md
+
+# 5. 跨實驗比較（bootstrap 區間 + forest plot）
+python -m analysis.evals
+
+# 6. 不花錢驗算：從存下來的 session 重算全部指標
+python -m bench.runner.recompute
 ```
+
+容器組（Day 28）需要先建 image：
+
+```bash
+docker build -f docker/Dockerfile -t pi-bench:0.84.3 docker/
+python -m bench.runner.cli run experiments/configs/e28_sandbox.json
+```
+
+容器會掛載主機的 Pi 設定目錄（`PI_CODING_AGENT_DIR`）以取得憑證。這代表**容器裡的 agent 讀得到你的憑證**，詳見 Day 28 對邊界的說明。
 
 路徑可用環境變數改：`BENCH_RUNS_ROOT`（每次執行的工作目錄）、`BENCH_PYTHON`（受測專案用的 python）、`PI_CLI_JS`。
 
