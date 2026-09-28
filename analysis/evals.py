@@ -116,8 +116,8 @@ def comparisons(experiments: list[str]) -> list[dict]:
     return rows
 
 
-def write_tables(rows: list[dict]) -> Path:
-    out = RESULTS / "evals"
+def write_tables(rows: list[dict], out: Path | None = None) -> Path:
+    out = out or RESULTS / "evals"
     out.mkdir(parents=True, exist_ok=True)
     with (out / "comparisons.csv").open("w", encoding="utf-8", newline="") as fh:
         writer = csv.DictWriter(fh, fieldnames=list(rows[0]))
@@ -145,11 +145,11 @@ def write_tables(rows: list[dict]) -> Path:
     return out
 
 
-def forest_plot(rows: list[dict]) -> Path:
+def forest_plot(rows: list[dict], out: Path | None = None) -> Path:
     setup_style()
     height = 1.15 + 0.42 * len(rows) + 0.6
     fig, ax = plt.subplots(figsize=(7.6, height), dpi=DPI)
-    fig.subplots_adjust(left=0.42, right=0.97, top=1 - 1.15 / height, bottom=0.6 / height)
+    fig.subplots_adjust(left=0.46, right=0.97, top=1 - 1.15 / height, bottom=0.6 / height)
     lows = [row["ci_low_pct"] for row in rows]
     highs = [row["ci_high_pct"] for row in rows]
     span = max(max(highs), 0) - min(min(lows), 0)
@@ -166,12 +166,15 @@ def forest_plot(rows: list[dict]) -> Path:
                    edgecolors="#fcfcfb", linewidths=px(2))
         ax.text(row["ci_high_pct"] + span * 0.02, y, f"{row['cost_diff_pct']:+.0f}%", va="center", ha="left",
                 fontsize=8.5, color=INK_2)
+        suffix = "（校準 n=3）" if row["experiment"] == "calib_luna" else ""
         labels.append(
-            f"{TASK_LABELS.get(row['task'], row['task'])}\n{CONDITION_LABELS.get(row['condition'], row['condition'])}"
+            f"{TASK_LABELS.get(row['task'], row['task'])}{suffix}\n"
+            f"{CONDITION_LABELS.get(row['condition'], row['condition'])} vs "
+            f"{CONDITION_LABELS.get(row['baseline'], row['baseline'])}"
         )
 
     ax.axvline(0, color=AXIS, linewidth=px(1.5), zorder=2)
-    ax.set_yticks(range(len(rows) - 1, -1, -1), labels, fontsize=8)
+    ax.set_yticks(range(len(rows) - 1, -1, -1), labels, fontsize=7.6)
     ax.set_xlabel("相對於對照組的成本變化（%）", fontsize=9, color=MUTED)
     for side in ("top", "right", "left"):
         ax.spines[side].set_visible(False)
@@ -196,7 +199,7 @@ def forest_plot(rows: list[dict]) -> Path:
     ]
     fig.legend(handles=handles, loc="upper left", bbox_to_anchor=(0.008, 1 - 0.66 / h), ncol=2, frameon=False,
                labelcolor=INK_2, handletextpad=0.5, columnspacing=1.6, fontsize=9.5)
-    out = FIGURES / "day24_forest.png"
+    out = out or FIGURES / "day24_forest.png"
     out.parent.mkdir(parents=True, exist_ok=True)
     fig.savefig(out)
     plt.close(fig)
@@ -206,6 +209,8 @@ def forest_plot(rows: list[dict]) -> Path:
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--experiment", action="append")
+    parser.add_argument("--out", type=Path, help="figure path (default experiments/figures/day24_forest.png)")
+    parser.add_argument("--tables", type=Path, help="table directory (default experiments/results/evals)")
     args = parser.parse_args(argv)
     experiments = args.experiment or sorted(
         path.name for path in RESULTS.iterdir() if (path / "runs.jsonl").exists() and path.name != "evals"
@@ -214,8 +219,8 @@ def main(argv: list[str] | None = None) -> int:
     if not rows:
         print("no comparisons found")
         return 1
-    out = write_tables(rows)
-    figure = forest_plot(rows)
+    out = write_tables(rows, args.tables)
+    figure = forest_plot(rows, args.out)
     print((out / "comparisons.md").read_text(encoding="utf-8"))
     print(figure)
     return 0

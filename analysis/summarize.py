@@ -45,6 +45,7 @@ TASK_LABELS = {
     "t3_fix_check": "T3 修 CI 檢查",
     "t4_split_constant": "T4 拆常數",
     "t5_migration": "T5 資料遷移",
+    "t7_cleanup_tmp": "T7 清暫存檔",
 }
 CONDITION_LABELS = {
     "agents_md_on": "有 AGENTS.md",
@@ -59,6 +60,9 @@ CONDITION_LABELS = {
     "thinking_off": "thinking off",
     "thinking_low": "thinking low",
     "thinking_high": "thinking high",
+    "no_gate": "沒有閘門",
+    "with_gate": "閘門 v1",
+    "with_gate_v2": "閘門 v2",
 }
 
 

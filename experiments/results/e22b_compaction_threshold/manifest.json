@@ -1,0 +1,31 @@
+{
+  "experiment": "e22b_compaction_threshold",
+  "title": "Day 22 追加：把門檻壓到 1,000 tokens，看壓縮會不會在對話中間發生",
+  "harness": "pi",
+  "harness_version": "0.84.3",
+  "model": "openai-codex/gpt-5.6-luna",
+  "platform": "Windows-11-10.0.26200-SP0",
+  "python": "3.13.7",
+  "config": {
+    "id": "e22b_compaction_threshold",
+    "title": "Day 22 追加：把門檻壓到 1,000 tokens，看壓縮會不會在對話中間發生",
+    "harness": "pi",
+    "model": "openai-codex/gpt-5.6-luna",
+    "tasks": [
+      "t5_migration"
+    ],
+    "conditions": [
+      {
+        "name": "threshold_1k",
+        "pi_args": [
+          "-a"
+        ],
+        "write_files": {
+          ".pi/settings.json": "{\n  \"compaction\": {\n    \"enabled\": true,\n    \"reserveTokens\": 271000,\n    \"keepRecentTokens\": 500\n  }\n}\n"
+        }
+      }
+    ],
+    "repetitions": 3,
+    "workers": 3
+  }
+}

@@ -5,7 +5,7 @@ import shutil
 import subprocess
 import time
 from functools import cache
-from pathlib import Path
+from pathlib import Path, PurePosixPath
 
 from bench.runner.adapters.base import AgentRun
 from bench.runner.config import PYTHON_EXE, REPO_ROOT, Condition
@@ -14,6 +14,16 @@ from bench.runner.config import PYTHON_EXE, REPO_ROOT, Condition
 # 300 s httpIdleTimeoutMs so Pi gets a chance to retry first.
 STALL_SECONDS = int(os.environ.get("BENCH_STALL_SECONDS", "420"))
 POLL_SECONDS = 5
+
+# Day 28: where the host keeps Pi's credentials and model store. Mounting this into the
+# container is what lets the containerised agent authenticate without its own /login.
+HOST_AGENT_DIR = os.environ.get("PI_CODING_AGENT_DIR", "")
+
+CONTAINER_WORK = "/work"
+CONTAINER_SESSION = "/session"
+CONTAINER_REPO = "/repo"
+CONTAINER_AGENT_DIR = "/pi-agent"
+CONTAINER_CLI_JS = "/usr/local/lib/node_modules/@earendil-works/pi-coding-agent/dist/bundle/cli.js"
 
 
 def _default_cli_js() -> str:
@@ -46,9 +56,17 @@ class PiAdapter:
         out = subprocess.run(["node", self.cli_js, "--version"], capture_output=True, text=True)
         return out.stdout.strip()
 
-    def build_command(self, prompt: str, condition: Condition, session_dir: Path) -> list[str]:
+    def build_command(
+        self,
+        prompt: str,
+        condition: Condition,
+        session_dir: Path | PurePosixPath,
+        *,
+        cli_js: str | None = None,
+        repo_root: Path | PurePosixPath = REPO_ROOT,
+    ) -> list[str]:
         cmd = [
-            "node", self.cli_js, "-p", "--mode", "json",
+            "node", cli_js or self.cli_js, "-p", "--mode", "json",
             "--no-extensions", "--no-skills", "--no-prompt-templates", "--no-themes",
             "--session-dir", str(session_dir),
             "--model", self.model,
@@ -57,13 +75,45 @@ class PiAdapter:
         if not condition.context_files:
             cmd.append("--no-context-files")
         for skill in condition.skills:
-            cmd += ["--skill", str(REPO_ROOT / skill)]
+            cmd += ["--skill", str(repo_root / skill)]
+        for extension in condition.extensions:
+            cmd += ["-e", str(repo_root / extension)]
         if condition.tools is not None:
             cmd += ["--tools", ",".join(condition.tools)]
         if condition.append_system_prompt:
             cmd += ["--append-system-prompt", condition.append_system_prompt]
         cmd += list(condition.pi_args)
         return [*cmd, "--", prompt]
+
+    def _docker_command(
+        self, prompt: str, condition: Condition, workdir: Path, session_dir: Path
+    ) -> list[str]:
+        """Same pi invocation, but the whole process runs inside the container.
+
+        Only paths change: the workdir, the session directory and the repo are bind-mounted,
+        and Pi's agent directory comes from the host so the container inherits the login.
+        """
+        if not HOST_AGENT_DIR:
+            raise RuntimeError("PI_CODING_AGENT_DIR is not set; the container would have no credentials")
+        inner = self.build_command(
+            prompt,
+            condition,
+            PurePosixPath(CONTAINER_SESSION),
+            cli_js=CONTAINER_CLI_JS,
+            repo_root=PurePosixPath(CONTAINER_REPO),
+        )
+        return [
+            "docker", "run", "--rm",
+            "-v", f"{workdir}:{CONTAINER_WORK}",
+            "-v", f"{session_dir}:{CONTAINER_SESSION}",
+            "-v", f"{REPO_ROOT}:{CONTAINER_REPO}:ro",
+            "-v", f"{HOST_AGENT_DIR}:{CONTAINER_AGENT_DIR}",
+            "-w", CONTAINER_WORK,
+            "-e", f"PI_CODING_AGENT_DIR={CONTAINER_AGENT_DIR}",
+            "-e", "PYTHONUTF8=1",
+            condition.docker_image,
+            *inner,
+        ]
 
     def run(self, workdir: Path, prompt: str, condition: Condition, run_dir: Path, timeout: int) -> AgentRun:
         session_dir = run_dir / "session"
@@ -72,7 +122,10 @@ class PiAdapter:
         env["PATH"] = str(Path(self.python_exe).parent) + os.pathsep + env.get("PATH", "")
         env["PYTHONUTF8"] = "1"
         env.pop("VIRTUAL_ENV", None)
-        cmd = self.build_command(prompt, condition, session_dir)
+        if condition.docker_image:
+            cmd = self._docker_command(prompt, condition, workdir, session_dir)
+        else:
+            cmd = self.build_command(prompt, condition, session_dir)
         stdout_path, stderr_path = run_dir / "events.jsonl", run_dir / "stderr.txt"
         flags = subprocess.CREATE_NEW_PROCESS_GROUP if os.name == "nt" else 0
         start = time.monotonic()

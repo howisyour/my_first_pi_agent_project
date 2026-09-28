@@ -1,0 +1,37 @@
+{
+  "experiment": "e22_compaction",
+  "title": "Day 22（彈性格）：強制觸發 compaction 的代價",
+  "harness": "pi",
+  "harness_version": "0.84.3",
+  "model": "openai-codex/gpt-5.6-luna",
+  "platform": "Windows-11-10.0.26200-SP0",
+  "python": "3.13.7",
+  "config": {
+    "id": "e22_compaction",
+    "title": "Day 22（彈性格）：強制觸發 compaction 的代價",
+    "harness": "pi",
+    "model": "openai-codex/gpt-5.6-luna",
+    "tasks": [
+      "t5_migration"
+    ],
+    "conditions": [
+      {
+        "name": "no_compaction",
+        "pi_args": [
+          "-a"
+        ]
+      },
+      {
+        "name": "forced_compaction",
+        "pi_args": [
+          "-a"
+        ],
+        "write_files": {
+          ".pi/settings.json": "{\n  \"compaction\": {\n    \"enabled\": true,\n    \"reserveTokens\": 266000,\n    \"keepRecentTokens\": 2500\n  }\n}\n"
+        }
+      }
+    ],
+    "repetitions": 5,
+    "workers": 3
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "id": "e26b_tool_gate_v2",
+  "title": "Day 26：修好指令解析之後的閘門（v2）",
+  "note": "只跑閘門組；對照的 no_gate 組沿用 e26_tool_gate（同任務、同模型、同一天）。",
+  "harness": "pi",
+  "model": "openai-codex/gpt-5.6-luna",
+  "tasks": ["t7_cleanup_tmp"],
+  "conditions": [
+    {"name": "with_gate_v2", "extensions": ["bench/extensions/tool-gate-v2.ts"]}
+  ],
+  "repetitions": 5,
+  "workers": 3
+}

@@ -1,0 +1,29 @@
+{
+  "experiment": "e28_sandbox",
+  "title": "Day 28：同一個任務，跑在主機上 vs 跑在容器裡",
+  "harness": "pi",
+  "harness_version": "0.84.3",
+  "model": "openai-codex/gpt-5.6-luna",
+  "platform": "Windows-11-10.0.26200-SP0",
+  "python": "3.13.7",
+  "config": {
+    "id": "e28_sandbox",
+    "title": "Day 28：同一個任務，跑在主機上 vs 跑在容器裡",
+    "harness": "pi",
+    "model": "openai-codex/gpt-5.6-luna",
+    "tasks": [
+      "t2_add_endpoint"
+    ],
+    "conditions": [
+      {
+        "name": "host"
+      },
+      {
+        "name": "docker",
+        "docker_image": "pi-bench:0.84.3"
+      }
+    ],
+    "repetitions": 5,
+    "workers": 2
+  }
+}

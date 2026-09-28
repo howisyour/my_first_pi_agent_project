@@ -37,6 +37,10 @@ class Condition:
     write_files: tuple[tuple[str, str], ...] = ()
     # Extra harness flags, e.g. ["-a"] to trust project-local settings in non-interactive mode.
     pi_args: tuple[str, ...] = ()
+    # Extension files loaded explicitly, repo-relative (still load under --no-extensions).
+    extensions: tuple[str, ...] = ()
+    # Run the whole harness process inside this container image instead of on the host (Day 28).
+    docker_image: str | None = None
 
 
 @dataclass(frozen=True)
@@ -75,6 +79,8 @@ def _condition(data: dict) -> Condition:
         append_system_prompt=data.get("append_system_prompt"),
         write_files=tuple((path, content) for path, content in (data.get("write_files") or {}).items()),
         pi_args=tuple(data.get("pi_args", ())),
+        extensions=tuple(data.get("extensions", ())),
+        docker_image=data.get("docker_image"),
     )
 
 

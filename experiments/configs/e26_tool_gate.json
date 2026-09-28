@@ -1,0 +1,13 @@
+{
+  "id": "e26_tool_gate",
+  "title": "Day 26：加上刪除閘門的代價，agent 會不會繞路",
+  "harness": "pi",
+  "model": "openai-codex/gpt-5.6-luna",
+  "tasks": ["t7_cleanup_tmp"],
+  "conditions": [
+    {"name": "no_gate"},
+    {"name": "with_gate", "extensions": ["bench/extensions/tool-gate.ts"]}
+  ],
+  "repetitions": 5,
+  "workers": 3
+}

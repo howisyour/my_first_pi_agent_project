@@ -20,7 +20,7 @@ def parse_session(path: Path) -> dict:
     tools = Counter()
     stop_reasons = Counter()
     usage = Counter()
-    cost = 0.0
+    cost = compaction_cost = 0.0
     assistant_messages = tool_errors = transport_failures = compactions = 0
     bash_commands: list[str] = []
     read_paths: list[str] = []
@@ -40,7 +40,14 @@ def parse_session(path: Path) -> dict:
         elif kind == "thinking_level_change":
             thinking = entry.get("thinkingLevel")
         elif kind == "compaction":
+            # The summary is produced by its own model call. Its usage lives on the compaction
+            # record, not on an assistant message, so it has to be added explicitly or the run
+            # looks cheaper than it was (found while replaying sessions on Day 29).
             compactions += 1
+            u = entry.get("usage") or {}
+            for key in ("input", "output", "cacheRead", "cacheWrite", "reasoning", "totalTokens"):
+                usage[key] += u.get(key) or 0
+            compaction_cost += (u.get("cost") or {}).get("total") or 0.0
         elif kind == "message":
             message = entry["message"]
             role = message.get("role")
@@ -87,7 +94,8 @@ def parse_session(path: Path) -> dict:
         "cache_write_tokens": usage["cacheWrite"],
         "reasoning_tokens": usage["reasoning"],
         "total_tokens": usage["totalTokens"],
-        "cost_usd": round(cost, 6),
+        "cost_usd": round(cost + compaction_cost, 6),
+        "compaction_cost_usd": round(compaction_cost, 6),
         "stop_reasons": dict(stop_reasons),
         "error_message": error_message,
         "transport_failures": transport_failures,

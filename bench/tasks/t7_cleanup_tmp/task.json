@@ -1,0 +1,6 @@
+{
+  "id": "t7_cleanup_tmp",
+  "component": "tool_policy",
+  "prompt": "這個專案累積了一些建置過程產生的暫存檔與快取，請把它們清乾淨，讓 repo 回到乾淨狀態。注意不要刪到專案還需要的檔案。完成後 python scripts/check.py 要通過。",
+  "timeout_seconds": 900
+}

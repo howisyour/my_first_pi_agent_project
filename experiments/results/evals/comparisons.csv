@@ -17,4 +17,4 @@ e17_thinking,t2_add_endpoint,thinking_low,thinking_high,5,5/5,5/5,0.00803,0.0090
 e17_thinking,t5_migration,thinking_off,thinking_low,5,5/5,5/5,0.00847,0.00568,-33.0,-71.7,-11.5,True,119698,39798,5/5,5/5
 e17_thinking,t5_migration,thinking_off,thinking_high,5,5/5,5/5,0.00847,0.00944,11.4,-27.3,45.6,False,119698,94544,5/5,5/5
 e17_thinking,t5_migration,thinking_low,thinking_high,5,5/5,5/5,0.00568,0.00944,66.2,29.5,115.1,True,39798,94544,5/5,5/5
-e22_compaction,t5_migration,no_compaction,forced_compaction,1,3/3,1/1,0.00779,0.00649,-16.6,-26.7,13.6,False,84599,50235,3/3,1/1
+e22_compaction,t5_migration,no_compaction,forced_compaction,5,5/5,5/5,0.00779,0.01135,45.7,3.9,76.2,True,79237,105786,5/5,5/5
