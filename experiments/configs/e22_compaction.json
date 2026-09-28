@@ -1,0 +1,22 @@
+{
+  "id": "e22_compaction",
+  "title": "Day 22（彈性格）：強制觸發 compaction 的代價",
+  "harness": "pi",
+  "model": "openai-codex/gpt-5.6-luna",
+  "tasks": ["t5_migration"],
+  "conditions": [
+    {
+      "name": "no_compaction",
+      "pi_args": ["-a"]
+    },
+    {
+      "name": "forced_compaction",
+      "pi_args": ["-a"],
+      "write_files": {
+        ".pi/settings.json": "{\n  \"compaction\": {\n    \"enabled\": true,\n    \"reserveTokens\": 266000,\n    \"keepRecentTokens\": 2500\n  }\n}\n"
+      }
+    }
+  ],
+  "repetitions": 5,
+  "workers": 3
+}

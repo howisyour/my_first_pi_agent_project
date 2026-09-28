@@ -52,6 +52,8 @@ CONDITION_LABELS = {
     "skill_off": "無 Skill",
     "skill_on": "有 Skill",
     "appended_prompt": "規則灌進 system prompt",
+    "no_compaction": "不會觸發 compaction",
+    "forced_compaction": "強制觸發 compaction",
     "default_tools": "預設四個工具",
     "search_tools": "加上 grep/find/ls",
     "thinking_off": "thinking off",

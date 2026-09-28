@@ -14,6 +14,7 @@ import sys
 import threading
 import traceback
 from concurrent.futures import ThreadPoolExecutor, as_completed
+from dataclasses import replace
 from datetime import UTC, datetime
 from pathlib import Path
 
@@ -137,8 +138,13 @@ def run_one(exp: Experiment, adapter, task_id: str, condition: Condition, rep: i
     return record
 
 
-def run_experiment(config: Path, workers: int | None, limit: int | None, retry_infra: bool = False) -> int:
+def run_experiment(
+    config: Path, workers: int | None, limit: int | None, retry_infra: bool = False, as_id: str | None = None
+) -> int:
     exp = load_experiment(config)
+    if as_id:
+        # Regression mode: same config, fresh results directory, so the two can be compared.
+        exp = replace(exp, id=as_id)
     adapter = ADAPTERS[exp.harness](exp.model)
     out_dir = RESULTS_DIR / exp.id
     out_dir.mkdir(parents=True, exist_ok=True)
@@ -221,10 +227,11 @@ def main(argv: list[str] | None = None) -> int:
     run.add_argument("--workers", type=int)
     run.add_argument("--limit", type=int)
     run.add_argument("--retry-infra", action="store_true", help="move hung/stalled runs to runs.infra_dropped.jsonl and rerun them")
+    run.add_argument("--as", dest="as_id", help="record results under a different experiment id (regression rerun)")
     args = parser.parse_args(argv)
     if args.command == "selfcheck":
         return selfcheck()
-    return run_experiment(args.config, args.workers, args.limit, args.retry_infra)
+    return run_experiment(args.config, args.workers, args.limit, args.retry_infra, args.as_id)
 
 
 if __name__ == "__main__":

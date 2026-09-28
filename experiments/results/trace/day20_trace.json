@@ -1,0 +1,240 @@
+{
+  "exitCode": 0,
+  "spans": [
+    {
+      "name": "pi.harness.turn",
+      "spanId": "1632a57672f99a8a",
+      "parentSpanId": "62529a398ac31c2f",
+      "startMs": 0,
+      "durationMs": 17463.3,
+      "attributes": {}
+    },
+    {
+      "name": "pi.harness.run",
+      "spanId": "62529a398ac31c2f",
+      "parentSpanId": null,
+      "startMs": 0,
+      "durationMs": 35661.5,
+      "attributes": {
+        "pi.harness.lane": "main",
+        "pi.harness.will_retry": false
+      }
+    },
+    {
+      "name": "pi.ai.request",
+      "spanId": "0f500cd745761871",
+      "parentSpanId": "1632a57672f99a8a",
+      "startMs": 12517,
+      "durationMs": 3484.2,
+      "attributes": {
+        "pi.ai.provider": "openai-codex",
+        "pi.ai.model": "gpt-5.6-luna",
+        "pi.ai.response.stop_reason": "toolUse",
+        "pi.ai.usage.input_tokens": 1455,
+        "pi.ai.usage.output_tokens": 102,
+        "pi.ai.usage.cache_read_tokens": 0,
+        "pi.ai.usage.reasoning_tokens": 25,
+        "pi.ai.usage.cost": 0.0004134
+      }
+    },
+    {
+      "name": "pi.harness.tool",
+      "spanId": "52086a30bd0ce554",
+      "parentSpanId": "1632a57672f99a8a",
+      "startMs": 16001,
+      "durationMs": 1461.5,
+      "attributes": {
+        "pi.harness.tool.name": "bash",
+        "pi.harness.tool.is_error": true
+      }
+    },
+    {
+      "name": "pi.harness.tool",
+      "spanId": "7b47d1283bb449fb",
+      "parentSpanId": "1632a57672f99a8a",
+      "startMs": 16002,
+      "durationMs": 77.9,
+      "attributes": {
+        "pi.harness.tool.name": "bash",
+        "pi.harness.tool.is_error": true
+      }
+    },
+    {
+      "name": "pi.harness.turn",
+      "spanId": "aabeefd4dd8a1a99",
+      "parentSpanId": "62529a398ac31c2f",
+      "startMs": 17464,
+      "durationMs": 6269.1,
+      "attributes": {}
+    },
+    {
+      "name": "pi.ai.request",
+      "spanId": "098a96fd47574126",
+      "parentSpanId": "aabeefd4dd8a1a99",
+      "startMs": 19103,
+      "durationMs": 3059.2,
+      "attributes": {
+        "pi.ai.provider": "openai-codex",
+        "pi.ai.model": "gpt-5.6-luna",
+        "pi.ai.response.stop_reason": "toolUse",
+        "pi.ai.usage.input_tokens": 1962,
+        "pi.ai.usage.output_tokens": 124,
+        "pi.ai.usage.cache_read_tokens": 0,
+        "pi.ai.usage.reasoning_tokens": 8,
+        "pi.ai.usage.cost": 0.0005412
+      }
+    },
+    {
+      "name": "pi.harness.tool",
+      "spanId": "36626762a66e7851",
+      "parentSpanId": "aabeefd4dd8a1a99",
+      "startMs": 22162,
+      "durationMs": 12,
+      "attributes": {
+        "pi.harness.tool.name": "read",
+        "pi.harness.tool.is_error": false
+      }
+    },
+    {
+      "name": "pi.harness.tool",
+      "spanId": "3f974ee2b898a980",
+      "parentSpanId": "aabeefd4dd8a1a99",
+      "startMs": 22162,
+      "durationMs": 12.6,
+      "attributes": {
+        "pi.harness.tool.name": "read",
+        "pi.harness.tool.is_error": false
+      }
+    },
+    {
+      "name": "pi.harness.tool",
+      "spanId": "263b2d6cc801fc90",
+      "parentSpanId": "aabeefd4dd8a1a99",
+      "startMs": 22163,
+      "durationMs": 79.9,
+      "attributes": {
+        "pi.harness.tool.name": "bash",
+        "pi.harness.tool.is_error": false
+      }
+    },
+    {
+      "name": "pi.harness.tool",
+      "spanId": "c31f3e5a7f510ce8",
+      "parentSpanId": "aabeefd4dd8a1a99",
+      "startMs": 22163,
+      "durationMs": 1569.1,
+      "attributes": {
+        "pi.harness.tool.name": "bash",
+        "pi.harness.tool.is_error": false
+      }
+    },
+    {
+      "name": "pi.harness.turn",
+      "spanId": "fb0bfc8e0b298b1e",
+      "parentSpanId": "62529a398ac31c2f",
+      "startMs": 23733,
+      "durationMs": 3897.5,
+      "attributes": {}
+    },
+    {
+      "name": "pi.ai.request",
+      "spanId": "43e87767d1371533",
+      "parentSpanId": "fb0bfc8e0b298b1e",
+      "startMs": 24667,
+      "durationMs": 2956.5,
+      "attributes": {
+        "pi.ai.provider": "openai-codex",
+        "pi.ai.model": "gpt-5.6-luna",
+        "pi.ai.response.stop_reason": "toolUse",
+        "pi.ai.usage.input_tokens": 3643,
+        "pi.ai.usage.output_tokens": 73,
+        "pi.ai.usage.cache_read_tokens": 0,
+        "pi.ai.usage.reasoning_tokens": 22,
+        "pi.ai.usage.cost": 0.0008162
+      }
+    },
+    {
+      "name": "pi.harness.tool",
+      "spanId": "5d4aff9f4a764b8c",
+      "parentSpanId": "fb0bfc8e0b298b1e",
+      "startMs": 27623,
+      "durationMs": 6.5,
+      "attributes": {
+        "pi.harness.tool.name": "edit",
+        "pi.harness.tool.is_error": false
+      }
+    },
+    {
+      "name": "pi.harness.turn",
+      "spanId": "532a62883daafc49",
+      "parentSpanId": "62529a398ac31c2f",
+      "startMs": 27630,
+      "durationMs": 4601.5,
+      "attributes": {}
+    },
+    {
+      "name": "pi.ai.request",
+      "spanId": "c2c15158b6aafc93",
+      "parentSpanId": "532a62883daafc49",
+      "startMs": 29097,
+      "durationMs": 2020.2,
+      "attributes": {
+        "pi.ai.provider": "openai-codex",
+        "pi.ai.model": "gpt-5.6-luna",
+        "pi.ai.response.stop_reason": "toolUse",
+        "pi.ai.usage.input_tokens": 1181,
+        "pi.ai.usage.output_tokens": 62,
+        "pi.ai.usage.cache_read_tokens": 2560,
+        "pi.ai.usage.reasoning_tokens": 0,
+        "pi.ai.usage.cost": 0.0003618
+      }
+    },
+    {
+      "name": "pi.harness.tool",
+      "spanId": "5018ea488d074ed7",
+      "parentSpanId": "532a62883daafc49",
+      "startMs": 31118,
+      "durationMs": 800.5,
+      "attributes": {
+        "pi.harness.tool.name": "bash",
+        "pi.harness.tool.is_error": false
+      }
+    },
+    {
+      "name": "pi.harness.tool",
+      "spanId": "21afb9f989a3d24a",
+      "parentSpanId": "532a62883daafc49",
+      "startMs": 31118,
+      "durationMs": 1113.6,
+      "attributes": {
+        "pi.harness.tool.name": "bash",
+        "pi.harness.tool.is_error": false
+      }
+    },
+    {
+      "name": "pi.harness.turn",
+      "spanId": "de3de0ec09505ebd",
+      "parentSpanId": "62529a398ac31c2f",
+      "startMs": 32232,
+      "durationMs": 3429.3,
+      "attributes": {}
+    },
+    {
+      "name": "pi.ai.request",
+      "spanId": "2a2a3ffa4ee5e6db",
+      "parentSpanId": "de3de0ec09505ebd",
+      "startMs": 33285,
+      "durationMs": 2376.4,
+      "attributes": {
+        "pi.ai.provider": "openai-codex",
+        "pi.ai.model": "gpt-5.6-luna",
+        "pi.ai.response.stop_reason": "stop",
+        "pi.ai.usage.input_tokens": 2470,
+        "pi.ai.usage.output_tokens": 96,
+        "pi.ai.usage.cache_read_tokens": 1536,
+        "pi.ai.usage.reasoning_tokens": 0,
+        "pi.ai.usage.cost": 0.0006399200000000001
+      }
+    }
+  ]
+}

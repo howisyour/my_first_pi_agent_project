@@ -62,6 +62,7 @@ class PiAdapter:
             cmd += ["--tools", ",".join(condition.tools)]
         if condition.append_system_prompt:
             cmd += ["--append-system-prompt", condition.append_system_prompt]
+        cmd += list(condition.pi_args)
         return [*cmd, "--", prompt]
 
     def run(self, workdir: Path, prompt: str, condition: Condition, run_dir: Path, timeout: int) -> AgentRun:

@@ -49,6 +49,10 @@ def prepare(task: Task | None, condition: Condition, run_dir: Path) -> Path:
         load_module(task.dir / "setup.py").apply(workdir)
     for rel in condition.remove_files:
         (workdir / rel).unlink(missing_ok=True)
+    for rel, content in condition.write_files:
+        target = workdir / rel
+        target.parent.mkdir(parents=True, exist_ok=True)
+        target.write_text(content, encoding="utf-8", newline="\n")
     shutil.copytree(workdir, run_dir / "baseline")
     git(workdir, "init", "-q")
     git(workdir, "add", "-A")

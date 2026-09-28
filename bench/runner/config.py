@@ -33,6 +33,10 @@ class Condition:
     thinking: str = "medium"
     context_files: bool = True
     append_system_prompt: str | None = None
+    # Extra files written into the workdir before the run, e.g. {".pi/settings.json": "{...}"}.
+    write_files: tuple[tuple[str, str], ...] = ()
+    # Extra harness flags, e.g. ["-a"] to trust project-local settings in non-interactive mode.
+    pi_args: tuple[str, ...] = ()
 
 
 @dataclass(frozen=True)
@@ -69,6 +73,8 @@ def _condition(data: dict) -> Condition:
         thinking=data.get("thinking", "medium"),
         context_files=data.get("context_files", True),
         append_system_prompt=data.get("append_system_prompt"),
+        write_files=tuple((path, content) for path, content in (data.get("write_files") or {}).items()),
+        pi_args=tuple(data.get("pi_args", ())),
     )
 
 
